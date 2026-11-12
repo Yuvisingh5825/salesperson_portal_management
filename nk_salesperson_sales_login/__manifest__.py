@@ -4,7 +4,7 @@
     "category": "Sales",
     "summary": "Salesperson login with private quotations, reporting, expenses, surveys and live location tracking",
     "author": "NeemKaroli Consulting LLP",
-    "website": "https://your-website.com",
+    "website": "https://neemkaroliconsulting.com",
     "depends": ["base",
         "web",
         "sale_management",
