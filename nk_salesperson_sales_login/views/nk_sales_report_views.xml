@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =====================================================
+         REPORT WIZARD
+    ====================================================== -->
+
+    <record id="view_nk_report_wizard_form" model="ir.ui.view">
+        <field name="name">nk.salesperson.report.wizard.form</field>
+        <field name="model">nk.salesperson.report.wizard</field>
+        <field name="arch" type="xml">
+
+            <form string="Field Salesperson Reporting">
+
+                <group>
+                    <group string="Date Filter">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+
+                    <group string="Report">
+                        <field name="report_type" widget="radio"/>
+                    </group>
+                </group>
+
+                <group string="Salesperson">
+                    <field name="employee_scope" widget="radio"/>
+
+                    <field name="employee_ids"
+                           widget="many2many_tags"
+                           invisible="employee_scope != 'selected'"
+                           required="employee_scope == 'selected'"/>
+                </group>
+
+                <footer>
+                    <button string="Show Report"
+                            name="action_show_report"
+                            type="object"
+                            class="btn-primary"/>
+
+                    <button string="Cancel"
+                            special="cancel"/>
+                </footer>
+
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_nk_report_wizard" model="ir.actions.act_window">
+        <field name="name">Field Salesperson Reporting</field>
+        <field name="res_model">nk.salesperson.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+    <!-- =====================================================
+         1. SALES & QUOTATIONS - SEARCH
+    ====================================================== -->
+
+    <record id="view_nk_report_search" model="ir.ui.view">
+        <field name="name">nk.salesperson.report.search</field>
+        <field name="model">nk.salesperson.report</field>
+        <field name="arch" type="xml">
+
+            <search string="Sales &amp; Quotations">
+                <field name="order_name"/>
+                <field name="nk_employee_id"/>
+                <field name="partner_id"/>
+                <field name="reject_reason"/>
+
+                <field name="survey_name"/>
+
+                <filter name="f_rejected"
+                        string="Rejected"
+                        domain="[('is_rejected', '=', True)]"/>
+
+                <filter name="f_with_survey"
+                        string="With Survey"
+                        domain="[('has_survey', '=', True)]"/>
+
+                <filter name="f_without_survey"
+                        string="Without Survey"
+                        domain="[('has_survey', '=', False)]"/>
+
+                <group>
+                    <filter name="group_survey_type"
+                            string="Survey Type"
+                            context="{'group_by': 'survey_type'}"/>
+
+                    <filter name="group_employee"
+                            string="Salesperson"
+                            context="{'group_by': 'nk_employee_id'}"/>
+
+                    <filter name="group_customer"
+                            string="Customer"
+                            context="{'group_by': 'partner_id'}"/>
+
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+
+                    <filter name="group_month"
+                            string="Month"
+                            context="{'group_by': 'order_date:month'}"/>
+                </group>
+            </search>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         SALES & QUOTATIONS - LIST
+    ====================================================== -->
+
+    <record id="view_nk_report_sales_list" model="ir.ui.view">
+        <field name="name">nk.salesperson.report.sales.list</field>
+        <field name="model">nk.salesperson.report</field>
+        <field name="arch" type="xml">
+
+            <list string="Sales &amp; Quotations"
+                  action="action_open_order"
+                  type="object">
+
+                <field name="order_name"/>
+                <field name="nk_employee_id"/>
+                <field name="partner_id"/>
+                <field name="order_date"/>
+                <field name="state"/>
+                <field name="survey_name"/>
+                <field name="survey_type"/>
+
+                <field name="currency_id" column_invisible="1"/>
+
+                <field name="amount_untaxed" sum="Total"/>
+                <field name="amount_tax" sum="Total"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="margin" sum="Total"/>
+
+            </list>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         SALES & QUOTATIONS - PIVOT
+    ====================================================== -->
+
+    <record id="view_nk_report_sales_pivot" model="ir.ui.view">
+        <field name="name">nk.salesperson.report.sales.pivot</field>
+        <field name="model">nk.salesperson.report</field>
+        <field name="arch" type="xml">
+
+            <pivot string="Sales &amp; Quotations">
+                <field name="nk_employee_id" type="row"/>
+                <field name="order_date" interval="month" type="col"/>
+                <field name="amount_total" type="measure"/>
+                <field name="margin" type="measure"/>
+            </pivot>
+
+        </field>
+    </record>
+
+
+    <record id="action_nk_report_sales" model="ir.actions.act_window">
+        <field name="name">Sales &amp; Quotations</field>
+        <field name="res_model">nk.salesperson.report</field>
+        <field name="view_mode">list,pivot</field>
+
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_nk_report_sales_list')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_nk_report_sales_pivot')})
+        ]"/>
+
+        <field name="search_view_id" ref="view_nk_report_search"/>
+    </record>
+
+
+    <!-- =====================================================
+         2. REJECTED QUOTATIONS - LIST
+    ====================================================== -->
+
+    <record id="view_nk_report_rejected_list" model="ir.ui.view">
+        <field name="name">nk.salesperson.report.rejected.list</field>
+        <field name="model">nk.salesperson.report</field>
+        <field name="arch" type="xml">
+
+            <list string="Rejected Quotations"
+                  action="action_open_order"
+                  type="object"
+                  decoration-danger="is_rejected">
+
+                <field name="order_name"/>
+                <field name="nk_employee_id"/>
+                <field name="partner_id"/>
+                <field name="order_date"/>
+                <field name="reject_date"/>
+
+                <field name="currency_id" column_invisible="1"/>
+
+                <field name="amount_total" sum="Total"/>
+                <field name="reject_reason"/>
+
+            </list>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         REJECTED QUOTATIONS - PIVOT
+    ====================================================== -->
+
+    <record id="view_nk_report_rejected_pivot" model="ir.ui.view">
+        <field name="name">nk.salesperson.report.rejected.pivot</field>
+        <field name="model">nk.salesperson.report</field>
+        <field name="arch" type="xml">
+
+            <pivot string="Rejected Quotations">
+                <field name="nk_employee_id" type="row"/>
+                <field name="order_date" interval="month" type="col"/>
+                <field name="amount_total" type="measure"/>
+            </pivot>
+
+        </field>
+    </record>
+
+
+    <record id="action_nk_report_rejected" model="ir.actions.act_window">
+        <field name="name">Rejected Quotations</field>
+        <field name="res_model">nk.salesperson.report</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="domain">[('is_rejected', '=', True)]</field>
+
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_nk_report_rejected_list')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_nk_report_rejected_pivot')})
+        ]"/>
+
+        <field name="search_view_id" ref="view_nk_report_search"/>
+    </record>
+
+
+    <!-- =====================================================
+         3. INVOICE DETAILS - INVOICE LEVEL
+         Each invoice appears separately.
+         Recovery and outstanding fields removed.
+    ====================================================== -->
+
+    <record id="view_nk_report_invoice_list" model="ir.ui.view">
+        <field name="name">nk.salesperson.invoice.report.list</field>
+        <field name="model">nk.salesperson.invoice.report</field>
+        <field name="arch" type="xml">
+
+            <list string="Invoice Details"
+                  action="action_open_invoice"
+                  type="object">
+
+                <field name="order_name"/>
+                <field name="nk_employee_id"/>
+                <field name="partner_id"/>
+                <field name="invoice_number"/>
+                <field name="invoice_date"/>
+                <field name="invoice_status"/>
+
+                <field name="currency_id" column_invisible="1"/>
+
+                <field name="amount_total"
+                       string="Sales Price"
+                       sum="Total"/>
+
+                <field name="invoice_amount"
+                       string="Invoice Amount"
+                       sum="Total"/>
+
+            </list>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         INVOICE DETAILS - SEARCH
+    ====================================================== -->
+
+    <record id="view_nk_report_invoice_search" model="ir.ui.view">
+        <field name="name">nk.salesperson.invoice.report.search</field>
+        <field name="model">nk.salesperson.invoice.report</field>
+        <field name="arch" type="xml">
+
+            <search string="Invoice Details">
+                <field name="invoice_number"/>
+                <field name="order_name"/>
+                <field name="nk_employee_id"/>
+                <field name="partner_id"/>
+                <field name="invoice_date"/>
+                <field name="invoice_status"/>
+
+                <group>
+                    <filter name="group_invoice_employee"
+                            string="Salesperson"
+                            context="{'group_by': 'nk_employee_id'}"/>
+
+                    <filter name="group_invoice_date"
+                            string="Invoice Month"
+                            context="{'group_by': 'invoice_date:month'}"/>
+
+                    <filter name="group_invoice_status"
+                            string="Invoice Status"
+                            context="{'group_by': 'invoice_status'}"/>
+                </group>
+            </search>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         INVOICE DETAILS - PIVOT
+    ====================================================== -->
+
+    <record id="view_nk_report_invoice_pivot" model="ir.ui.view">
+        <field name="name">nk.salesperson.invoice.report.pivot</field>
+        <field name="model">nk.salesperson.invoice.report</field>
+        <field name="arch" type="xml">
+
+            <pivot string="Invoice Analysis">
+                <field name="nk_employee_id" type="row"/>
+                <field name="invoice_date" interval="month" type="col"/>
+                <field name="invoice_amount" type="measure"/>
+            </pivot>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         INVOICE DETAILS - ACTION
+    ====================================================== -->
+
+    <record id="action_nk_report_invoice" model="ir.actions.act_window">
+        <field name="name">Invoice Details</field>
+        <field name="res_model">nk.salesperson.invoice.report</field>
+        <field name="view_mode">list,pivot</field>
+
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_nk_report_invoice_list')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_nk_report_invoice_pivot')})
+        ]"/>
+
+        <field name="search_view_id" ref="view_nk_report_invoice_search"/>
+    </record>
+
+
+    <!-- =====================================================
+         4. PRODUCT CATEGORY REPORT - GRAPH
+    ====================================================== -->
+
+    <record id="view_nk_report_category_graph" model="ir.ui.view">
+        <field name="name">nk.salesperson.category.report.graph</field>
+        <field name="model">nk.salesperson.category.report</field>
+        <field name="arch" type="xml">
+
+            <graph string="Sales by Product Category" type="bar">
+                <field name="categ_id"/>
+                <field name="price_subtotal" type="measure"/>
+            </graph>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         PRODUCT CATEGORY REPORT - PIVOT
+    ====================================================== -->
+
+    <record id="view_nk_report_category_pivot" model="ir.ui.view">
+        <field name="name">nk.salesperson.category.report.pivot</field>
+        <field name="model">nk.salesperson.category.report</field>
+        <field name="arch" type="xml">
+
+            <pivot string="Sales by Product Category">
+                <field name="categ_id" type="row"/>
+                <field name="order_date" interval="month" type="col"/>
+                <field name="product_qty" type="measure"/>
+                <field name="price_subtotal" type="measure"/>
+                <field name="margin" type="measure"/>
+            </pivot>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         PRODUCT CATEGORY REPORT - LIST
+    ====================================================== -->
+
+    <record id="view_nk_report_category_list" model="ir.ui.view">
+        <field name="name">nk.salesperson.category.report.list</field>
+        <field name="model">nk.salesperson.category.report</field>
+        <field name="arch" type="xml">
+
+            <list string="Sales by Product Category"
+                  action="action_open_order"
+                  type="object">
+
+                <field name="order_id"/>
+                <field name="nk_employee_id"/>
+                <field name="categ_id"/>
+                <field name="product_id"/>
+
+                <field name="currency_id" column_invisible="1"/>
+
+                <field name="product_qty" sum="Total"/>
+                <field name="price_subtotal" sum="Total"/>
+                <field name="margin" sum="Total"/>
+
+            </list>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         PRODUCT CATEGORY REPORT - SEARCH
+    ====================================================== -->
+
+    <record id="view_nk_report_category_search" model="ir.ui.view">
+        <field name="name">nk.salesperson.category.report.search</field>
+        <field name="model">nk.salesperson.category.report</field>
+        <field name="arch" type="xml">
+
+            <search string="Product Category Sales">
+                <field name="categ_id"/>
+                <field name="product_id"/>
+                <field name="nk_employee_id"/>
+
+                <group>
+                    <filter name="group_categ"
+                            string="Product Category"
+                            context="{'group_by': 'categ_id'}"/>
+
+                    <filter name="group_employee"
+                            string="Salesperson"
+                            context="{'group_by': 'nk_employee_id'}"/>
+
+                    <filter name="group_product"
+                            string="Product"
+                            context="{'group_by': 'product_id'}"/>
+
+                    <filter name="group_month"
+                            string="Month"
+                            context="{'group_by': 'order_date:month'}"/>
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+
+    <record id="action_nk_report_category" model="ir.actions.act_window">
+        <field name="name">Product Category Sales</field>
+        <field name="res_model">nk.salesperson.category.report</field>
+        <field name="view_mode">graph,pivot,list</field>
+
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_nk_report_category_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_nk_report_category_pivot')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_nk_report_category_list')})
+        ]"/>
+
+        <field name="search_view_id" ref="view_nk_report_category_search"/>
+    </record>
+
+
+    <!-- =====================================================
+         5. SALESPERSON MONTHLY PROFIT - LIST
+    ====================================================== -->
+
+    <record id="view_nk_report_profit_list" model="ir.ui.view">
+        <field name="name">nk.salesperson.profit.report.list</field>
+        <field name="model">nk.salesperson.profit.report</field>
+        <field name="arch" type="xml">
+
+            <list string="Salesperson Monthly Profit"
+                  decoration-danger="performance == 'loss'"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <field name="month"/>
+                <field name="employee_id"/>
+
+                <field name="performance"
+                       widget="badge"
+                       decoration-success="performance in ('excellent', 'good')"
+                       decoration-info="performance == 'average'"
+                       decoration-warning="performance == 'poor'"
+                       decoration-danger="performance == 'loss'"/>
+
+                <field name="currency_id" column_invisible="1"/>
+
+                <field name="quotation_count" sum="Total"/>
+                <field name="order_count" sum="Total"/>
+                <field name="sales_amount" sum="Total"/>
+                <field name="margin" sum="Total"/>
+                <field name="salary" sum="Total"/>
+                <field name="mobile_recharge" sum="Total"/>
+                <field name="travel_expense" sum="Total"/>
+                <field name="food_expense" sum="Total"/>
+                <field name="total_expense" sum="Total"/>
+                <field name="net_profit" sum="Total"/>
+
+            </list>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         SALESPERSON MONTHLY PROFIT - GRAPH
+    ====================================================== -->
+
+    <record id="view_nk_report_profit_graph" model="ir.ui.view">
+        <field name="name">nk.salesperson.profit.report.graph</field>
+        <field name="model">nk.salesperson.profit.report</field>
+        <field name="arch" type="xml">
+
+            <graph string="Salesperson Profit" type="bar">
+                <field name="employee_id"/>
+                <field name="margin" type="measure"/>
+                <field name="total_expense" type="measure"/>
+                <field name="net_profit" type="measure"/>
+            </graph>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         SALESPERSON MONTHLY PROFIT - PIVOT
+    ====================================================== -->
+
+    <record id="view_nk_report_profit_pivot" model="ir.ui.view">
+        <field name="name">nk.salesperson.profit.report.pivot</field>
+        <field name="model">nk.salesperson.profit.report</field>
+        <field name="arch" type="xml">
+
+            <pivot string="Salesperson Profit">
+                <field name="employee_id" type="row"/>
+                <field name="month" type="col"/>
+                <field name="margin" type="measure"/>
+                <field name="total_expense" type="measure"/>
+                <field name="net_profit" type="measure"/>
+            </pivot>
+
+        </field>
+    </record>
+
+
+    <!-- =====================================================
+         SALESPERSON MONTHLY PROFIT - SEARCH
+    ====================================================== -->
+
+    <record id="view_nk_report_profit_search" model="ir.ui.view">
+        <field name="name">nk.salesperson.profit.report.search</field>
+        <field name="model">nk.salesperson.profit.report</field>
+        <field name="arch" type="xml">
+
+            <search string="Salesperson Profit">
+                <field name="employee_id"/>
+                <field name="month"/>
+
+                <filter name="f_excellent"
+                        string="Excellent"
+                        domain="[('performance', '=', 'excellent')]"/>
+
+                <filter name="f_good"
+                        string="Good"
+                        domain="[('performance', '=', 'good')]"/>
+
+                <filter name="f_average"
+                        string="Average"
+                        domain="[('performance', '=', 'average')]"/>
+
+                <filter name="f_poor"
+                        string="Poor"
+                        domain="[('performance', '=', 'poor')]"/>
+
+                <filter name="f_loss"
+                        string="Loss"
+                        domain="[('performance', '=', 'loss')]"/>
+
+                <group>
+                    <filter name="group_employee"
+                            string="Salesperson"
+                            context="{'group_by': 'employee_id'}"/>
+
+                    <filter name="group_month"
+                            string="Month"
+                            context="{'group_by': 'month'}"/>
+
+                    <filter name="group_performance"
+                            string="Performance"
+                            context="{'group_by': 'performance'}"/>
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+
+    <record id="action_nk_report_profit" model="ir.actions.act_window">
+        <field name="name">Salesperson Monthly Profit</field>
+        <field name="res_model">nk.salesperson.profit.report</field>
+        <field name="view_mode">list,graph,pivot</field>
+
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_nk_report_profit_list')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('view_nk_report_profit_graph')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_nk_report_profit_pivot')})
+        ]"/>
+
+        <field name="search_view_id" ref="view_nk_report_profit_search"/>
+    </record>
+
+
+    <!-- =====================================================
+         REPORTING MENU
+    ====================================================== -->
+
+    <record id="sale.menu_sale_report" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[
+                   (4, ref('nk_salesperson_sales_login.group_nk_salesperson_manager')),
+                   (4, ref('base.group_system'))
+               ]"/>
+    </record>
+
+
+    <menuitem
+        id="menu_nk_salesperson_reporting_root"
+        name="Field Salesperson Reporting"
+        parent="sale.menu_sale_report"
+        sequence="50"
+        groups="sales_team.group_sale_manager,nk_salesperson_sales_login.group_nk_salesperson_manager,base.group_system"
+    />
+
+
+    <menuitem
+        id="menu_nk_report_wizard"
+        name="Reporting"
+        parent="menu_nk_salesperson_reporting_root"
+        action="action_nk_report_wizard"
+        sequence="10"
+        groups="sales_team.group_sale_manager,nk_salesperson_sales_login.group_nk_salesperson_manager,base.group_system"
+    />
+
+</odoo>

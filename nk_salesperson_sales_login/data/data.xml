@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_nk_salesperson_login" model="ir.actions.act_url">
+        <field name="name">Field Salesperson Login</field>
+        <field name="url">/nk_salesperson/login</field>
+        <field name="target">self</field>
+    </record>
+
+    <record id="seq_nk_salesperson_expense" model="ir.sequence">
+        <field name="name">Field Salesperson Expense</field>
+        <field name="code">nk.salesperson.expense</field>
+        <field name="prefix">EXP/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+
+    <record id="seq_ionex_survey" model="ir.sequence">
+        <field name="name">Survey</field>
+        <field name="code">ionex.survey</field>
+        <field name="prefix">SUR/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

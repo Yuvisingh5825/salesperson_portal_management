@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =====================================================
+         SURVEY - LIST
+    ====================================================== -->
+
+    <record id="view_ionex_survey_list" model="ir.ui.view">
+        <field name="name">ionex.survey.list</field>
+        <field name="model">ionex.survey</field>
+        <field name="arch" type="xml">
+            <list string="Surveys"
+                  decoration-success="state == 'quoted'"
+                  decoration-info="state == 'submitted'">
+                <field name="name"/>
+                <field name="survey_date"/>
+                <field name="survey_type"/>
+                <field name="customer_name" string="Customer"/>
+                <field name="employee_id"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="order_id"/>
+                <field name="order_currency_id" column_invisible="1"/>
+                <field name="quotation_amount" sum="Total Quotation"/>
+                <field name="order_state" optional="show"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =====================================================
+         SURVEY - FORM
+    ====================================================== -->
+
+    <record id="view_ionex_survey_form" model="ir.ui.view">
+        <field name="name">ionex.survey.form</field>
+        <field name="model">ionex.survey</field>
+        <field name="arch" type="xml">
+            <form string="Survey">
+                <header>
+                    <button name="action_submit"
+                            string="Submit"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_create_quotation"
+                            string="Create Quotation"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'draft' or (order_id and order_state != 'cancel')"/>
+                    <button name="action_set_draft"
+                            string="Set to Draft"
+                            type="object"
+                            invisible="state == 'draft' or is_locked or (order_id and order_state != 'cancel')"/>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,submitted,quoted"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_quotation"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not order_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Quotation</span>
+                                <field name="order_id" readonly="1"/>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <field name="is_locked" invisible="1"/>
+                    <field name="order_state" invisible="1"/>
+                    <group>
+                        <group string="Survey">
+                            <field name="survey_type"/>
+                            <field name="survey_date"/>
+                            <field name="employee_id"/>
+                        </group>
+                        <group string="Customer">
+                            <field name="partner_id"/>
+                            <field name="is_new_customer"/>
+                            <field name="new_company" invisible="not is_new_customer or partner_id"/>
+                            <field name="new_address" invisible="not is_new_customer or partner_id"/>
+                            <field name="new_phone" invisible="not is_new_customer or partner_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Person Visited">
+                            <field name="visited_person"/>
+                            <field name="visited_designation"/>
+                        </group>
+                        <group string="Proposal in the Name of">
+                            <field name="proposal_person"/>
+                            <field name="proposal_designation"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Contact Persons" name="contacts">
+                            <field name="contact_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="designation"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="System Details" name="system">
+                            <group invisible="survey_type != 'ro'">
+                                <field name="ro_capacity"/>
+                                <field name="ro_pressure"/>
+                                <field name="ro_flow"/>
+                            </group>
+                            <group invisible="survey_type != 'cooling'">
+                                <field name="cool_towers"/>
+                                <field name="cool_tower_type"/>
+                                <field name="cool_recirculation"/>
+                                <field name="cool_temp_diff"/>
+                                <field name="cool_makeup_quality"/>
+                                <field name="cool_sump_volume"/>
+                            </group>
+                            <group invisible="survey_type != 'boiler'">
+                                <field name="boiler_no"/>
+                                <field name="boiler_make"/>
+                                <field name="boiler_capacity"/>
+                                <field name="boiler_type"/>
+                                <field name="boiler_pressure"/>
+                                <field name="boiler_steam"/>
+                                <field name="boiler_condensate_pct"/>
+                                <field name="boiler_feed_temp"/>
+                                <field name="boiler_blowdown_pct"/>
+                                <field name="boiler_feed_quality"/>
+                                <field name="boiler_makeup_quality"/>
+                            </group>
+                        </page>
+
+                        <page string="Water Analysis" name="analysis">
+                            <field name="sample_legend" readonly="1" nolabel="1"/>
+                            <field name="analysis_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="test"/>
+                                    <field name="col1" string="Sample 1"/>
+                                    <field name="col2" string="Sample 2"/>
+                                    <field name="col3" string="Sample 3"/>
+                                    <field name="col4" string="Sample 4" column_invisible="parent.survey_type == 'cooling'"/>
+                                    <field name="col5" string="Sample 5" column_invisible="parent.survey_type == 'cooling'"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Present Treatment" name="treatment">
+                            <field name="treatment_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="make"/>
+                                    <field name="supplier"/>
+                                    <field name="chemical_form"/>
+                                    <field name="dosage"/>
+                                    <field name="price"/>
+                                </list>
+                            </field>
+                            <group string="Problem Faced">
+                                <field name="prob_scaling"/>
+                                <field name="prob_corrosion"/>
+                                <field name="prob_carry_over" invisible="survey_type == 'cooling'"/>
+                                <field name="prob_fouling" invisible="survey_type != 'cooling'"/>
+                                <field name="prob_expensive" invisible="survey_type == 'cooling'"/>
+                            </group>
+                            <field name="remarks" placeholder="Remarks"/>
+                        </page>
+
+                        <page string="Proposal Products" name="products">
+                            <field name="product_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="qty"/>
+                                    <field name="price_unit"/>
+                                    <field name="subtotal" sum="Total"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="amount_total"/>
+                            </group>
+                        </page>
+
+                        <page string="Signature" name="signature">
+                            <field name="customer_signature" widget="image"
+                                   options="{'size': [300, 150]}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- =====================================================
+         SURVEY - SEARCH / PIVOT / GRAPH
+    ====================================================== -->
+
+    <record id="view_ionex_survey_search" model="ir.ui.view">
+        <field name="name">ionex.survey.search</field>
+        <field name="model">ionex.survey</field>
+        <field name="arch" type="xml">
+            <search string="Surveys">
+                <field name="name" string="Survey No."/>
+                <field name="customer_name" string="Customer"/>
+                <field name="employee_id" string="Salesperson"/>
+                <field name="order_id" string="Quotation"/>
+                <separator/>
+                <filter name="f_ro" string="R.O."
+                        domain="[('survey_type', '=', 'ro')]"/>
+                <filter name="f_cooling" string="Cooling Water"
+                        domain="[('survey_type', '=', 'cooling')]"/>
+                <filter name="f_boiler" string="Boiler Water"
+                        domain="[('survey_type', '=', 'boiler')]"/>
+                <separator/>
+                <filter name="f_draft" string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="f_submitted" string="Submitted"
+                        domain="[('state', '=', 'submitted')]"/>
+                <filter name="f_quoted" string="Quoted"
+                        domain="[('state', '=', 'quoted')]"/>
+                <group>
+                    <filter name="g_employee" string="Salesperson"
+                            context="{'group_by': 'employee_id'}"/>
+                    <filter name="g_type" string="Type"
+                            context="{'group_by': 'survey_type'}"/>
+                    <filter name="g_state" string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="g_month" string="Month"
+                            context="{'group_by': 'survey_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_ionex_survey_pivot" model="ir.ui.view">
+        <field name="name">ionex.survey.pivot</field>
+        <field name="model">ionex.survey</field>
+        <field name="arch" type="xml">
+            <pivot string="Surveys">
+                <field name="employee_id" type="row"/>
+                <field name="survey_type" type="col"/>
+                <field name="amount_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_ionex_survey_graph" model="ir.ui.view">
+        <field name="name">ionex.survey.graph</field>
+        <field name="model">ionex.survey</field>
+        <field name="arch" type="xml">
+            <graph string="Surveys" type="bar">
+                <field name="employee_id"/>
+                <field name="survey_type"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- =====================================================
+         ACTION + MENU
+    ====================================================== -->
+
+    <record id="action_ionex_survey" model="ir.actions.act_window">
+        <field name="name">Surveys</field>
+        <field name="res_model">ionex.survey</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_ionex_survey_search"/>
+    </record>
+
+    <menuitem
+        id="menu_ionex_survey"
+        name="Surveys"
+        parent="menu_nk_salesperson_root"
+        action="action_ionex_survey"
+        sequence="20"
+        groups="nk_salesperson_sales_login.group_nk_salesperson,nk_salesperson_sales_login.group_nk_salesperson_manager,sales_team.group_sale_manager,base.group_system"/>
+
+    <!-- =====================================================
+         SALE ORDER: SURVEY LINK
+    ====================================================== -->
+
+    <record id="view_sale_order_form_ionex_survey" model="ir.ui.view">
+        <field name="name">sale.order.form.ionex.survey</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="ionex_survey_id"
+                       readonly="1"
+                       invisible="not ionex_survey_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

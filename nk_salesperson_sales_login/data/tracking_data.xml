@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Location history is deleted after this many days (0 = keep forever) -->
+    <record id="param_nk_location_retention_days" model="ir.config_parameter">
+        <field name="key">nk_salesperson.location_retention_days</field>
+        <field name="value">90</field>
+    </record>
+
+    <!-- Browser sends location every N minutes while tracking is ON -->
+    <record id="param_nk_location_interval_minutes" model="ir.config_parameter">
+        <field name="key">nk_salesperson.location_interval_minutes</field>
+        <field name="value">3</field>
+    </record>
+
+    <!-- No location for N minutes -> status becomes "No Signal" -->
+    <record id="param_nk_location_stale_minutes" model="ir.config_parameter">
+        <field name="key">nk_salesperson.location_stale_minutes</field>
+        <field name="value">10</field>
+    </record>
+
+    <record id="cron_nk_purge_old_locations" model="ir.cron">
+        <field name="name">Delete old salesperson locations</field>
+        <field name="model_id" ref="model_nk_tracking_session"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_purge_old_points()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="user_id" ref="base.user_root"/>
+    </record>
+
+    <record id="cron_nk_close_stale_sessions" model="ir.cron">
+        <field name="name">Close forgotten tracking sessions</field>
+        <field name="model_id" ref="model_nk_tracking_session"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_close_stale_sessions()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="user_id" ref="base.user_root"/>
+    </record>
+
+    <!-- Address lookup service (empty = no address lookup, only coordinates).
+         Default is the free OpenStreetMap Nominatim service. -->
+    <record id="param_nk_geocode_url" model="ir.config_parameter">
+        <field name="key">nk_salesperson.geocode_url</field>
+        <field name="value">https://nominatim.openstreetmap.org/reverse</field>
+    </record>
+
+    <record id="cron_nk_geocode_points" model="ir.cron">
+        <field name="name">Find address of salesperson locations</field>
+        <field name="model_id" ref="model_nk_location_point"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_geocode_points()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="user_id" ref="base.user_root"/>
+    </record>
+
+</odoo>

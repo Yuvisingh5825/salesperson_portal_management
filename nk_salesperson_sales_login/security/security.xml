@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- =========================================================
+         FIELD SALESPERSON CATEGORY
+    ========================================================== -->
+
+    <record id="module_category_nk_salesperson" model="ir.module.category">
+        <field name="name">Field Salesperson</field>
+        <field name="sequence">55</field>
+    </record>
+
+
+    <!-- =========================================================
+         FIELD SALESPERSON PRIVILEGE
+    ========================================================== -->
+
+    <record id="privilege_nk_salesperson" model="res.groups.privilege">
+        <field name="name">Field Salesperson</field>
+        <field name="sequence">10</field>
+        <field name="category_id" ref="module_category_nk_salesperson"/>
+    </record>
+
+
+    <!-- =========================================================
+         FIELD SALESPERSON USER GROUP
+    ========================================================== -->
+
+    <record id="group_nk_salesperson" model="res.groups">
+        <field name="name">Field Salesperson</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="privilege_nk_salesperson"/>
+
+        <!-- Only Internal User -->
+        <field name="implied_ids"
+               eval="[
+                   (4, ref('base.group_user'))
+               ]"/>
+    </record>
+
+
+    <!-- =========================================================
+         FIELD SALESPERSON MANAGER GROUP
+    ========================================================== -->
+
+    <record id="group_nk_salesperson_manager" model="res.groups">
+        <field name="name">Field Salesperson Manager</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="privilege_nk_salesperson"/>
+
+        <!-- Manager inherits Field Salesperson only -->
+        <field name="implied_ids"
+               eval="[
+                   (4, ref('group_nk_salesperson'))
+               ]"/>
+    </record>
+
+</odoo>
