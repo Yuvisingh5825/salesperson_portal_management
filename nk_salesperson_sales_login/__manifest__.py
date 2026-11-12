@@ -3,7 +3,7 @@
     "version": "19.0.1.3.0",
     "category": "Sales",
     "summary": "Salesperson login with private quotations, reporting, expenses, surveys and live location tracking",
-    "author": "Your Company Name",
+    "author": "NeemKaroli Consulting LLP",
     "website": "https://your-website.com",
     "depends": ["base",
         "web",
