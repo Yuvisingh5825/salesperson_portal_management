@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================== -->
+    <!-- SALE ORDER FORM - FIELD SALESPERSON -->
+    <!-- ===================================================== -->
+
+    <record id="view_sale_order_form_nk_salesperson"
+            model="ir.ui.view">
+
+        <field name="name">sale.order.form.nk.salesperson</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']"
+                   position="after">
+
+                <field name="nk_employee_id"
+                       string="Salesperson"
+                       readonly="1"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- SALE ORDER LIST -->
+    <!-- ===================================================== -->
+
+    <record id="view_sale_order_tree_nk_salesperson"
+            model="ir.ui.view">
+
+        <field name="name">sale.order.list.nk.salesperson</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='user_id']"
+                   position="after">
+
+                <field name="nk_employee_id"
+                       string="Field Salesperson"/>
+
+                <field name="nk_reject_reason"
+                       optional="hide"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- RESTRICT CONFIRM BUTTON -->
+    <!-- ===================================================== -->
+
+    <record id="view_sale_order_form_nk_confirm"
+            model="ir.ui.view">
+
+        <field name="name">sale.order.form.nk.confirm</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//button[@name='action_confirm']"
+                   position="attributes">
+
+                <attribute name="groups">sales_team.group_sale_manager,nk_salesperson_sales_login.group_nk_salesperson_manager</attribute>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- SAVE & BACK TO DASHBOARD -->
+    <!-- ===================================================== -->
+
+    <record id="view_sale_order_form_nk_dashboard_button"
+            model="ir.ui.view">
+
+        <field name="name">sale.order.form.nk.dashboard.button</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+
+                <button
+                    name="action_save_and_nk_dashboard"
+                    type="object"
+                    string="Save &amp; Open Quotation"
+                    class="btn-primary"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!-- REJECT QUOTATION (button + reason)                    -->
+    <!-- ===================================================== -->
+
+    <record id="view_sale_order_form_nk_reject"
+            model="ir.ui.view">
+
+        <field name="name">sale.order.form.nk.reject</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//header" position="inside">
+
+                <button
+                    name="action_nk_reject"
+                    type="object"
+                    string="Reject"
+                    class="btn-danger"
+                    invisible="state not in ('draft', 'sent')"/>
+
+            </xpath>
+
+            <xpath expr="//field[@name='partner_id']"
+                   position="after">
+
+                <field name="nk_is_rejected" invisible="1"/>
+
+                <field name="nk_reject_reason"
+                       invisible="not nk_is_rejected"/>
+
+                <field name="nk_reject_date"
+                       invisible="not nk_is_rejected"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="view_nk_quotation_reject_wizard_form"
+            model="ir.ui.view">
+
+        <field name="name">nk.quotation.reject.wizard.form</field>
+        <field name="model">nk.quotation.reject.wizard</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Reject Quotation">
+
+                <group>
+                    <field name="order_id"/>
+                    <field name="reason"
+                           placeholder="Why is this quotation rejected?"/>
+                </group>
+
+                <footer>
+                    <button string="Reject Quotation"
+                            name="action_reject"
+                            type="object"
+                            class="btn-danger"
+                            data-hotkey="q"/>
+                    <button string="Cancel"
+                            special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+
+            </form>
+
+        </field>
+    </record>
+
+</odoo>

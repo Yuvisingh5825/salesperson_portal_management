@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================== -->
+    <!-- SALESPERSON STATUS LIST                               -->
+    <!-- ===================================================== -->
+
+    <record id="view_nk_employee_tracking_list" model="ir.ui.view">
+        <field name="name">hr.employee.nk.tracking.list</field>
+        <field name="model">hr.employee</field>
+
+        <field name="arch" type="xml">
+            <list string="Location Tracking"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <field name="name"/>
+
+                <field name="nk_employee_id"/>
+
+                <field name="nk_tracking_status"
+                       widget="badge"
+                       decoration-success="nk_tracking_status == 'active'"
+                       decoration-warning="nk_tracking_status == 'no_signal'"
+                       decoration-muted="nk_tracking_status == 'offline'"/>
+
+                <field name="nk_last_location_time"/>
+
+                <field name="nk_last_address"/>
+
+                <field name="nk_last_location_text"
+                       string="Coordinates"/>
+
+                <field name="nk_last_accuracy"/>
+
+                <!-- Open location history -->
+                <button name="action_nk_open_history"
+                        type="object"
+                        string="History"
+                        icon="fa-history"
+                        class="btn-secondary"/>
+
+                <!-- Open today's tracking -->
+                <button name="action_nk_open_today_tracking"
+                        type="object"
+                        string="Today Tracking"
+                        icon="fa-location-arrow"
+                        class="btn-primary"/>
+
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- SALESPERSON STATUS ACTION                             -->
+    <!-- ===================================================== -->
+
+    <record id="action_nk_tracking_employees"
+            model="ir.actions.act_window">
+
+        <field name="name">Location Tracking</field>
+
+        <field name="res_model">hr.employee</field>
+
+        <field name="view_mode">list</field>
+
+        <field name="domain">
+            [('nk_employee_id', '!=', False)]
+        </field>
+
+        <field name="view_ids"
+               eval="[
+                   (5, 0, 0),
+                   (0, 0, {
+                       'view_mode': 'list',
+                       'view_id': ref('view_nk_employee_tracking_list')
+                   })
+               ]"/>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- TRACKING SESSIONS LIST                                -->
+    <!-- ===================================================== -->
+
+    <record id="view_nk_tracking_session_list"
+            model="ir.ui.view">
+
+        <field name="name">nk.tracking.session.list</field>
+        <field name="model">nk.tracking.session</field>
+
+        <field name="arch" type="xml">
+
+            <list string="Tracking Sessions"
+                  create="0"
+                  decoration-success="state == 'active'">
+
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="point_count"/>
+                <field name="last_update"/>
+
+                <field name="state"
+                       widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-muted="state == 'stopped'"/>
+
+            </list>
+
+        </field>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- TRACKING SESSION FORM                                 -->
+    <!-- ===================================================== -->
+
+    <record id="view_nk_tracking_session_form"
+            model="ir.ui.view">
+
+        <field name="name">nk.tracking.session.form</field>
+        <field name="model">nk.tracking.session</field>
+
+        <field name="arch" type="xml">
+
+            <form string="Tracking Session"
+                  create="0"
+                  edit="0">
+
+                <header>
+
+                    <button name="action_stop"
+                            type="object"
+                            string="Stop Tracking"
+                            invisible="state != 'active'"/>
+
+                    <field name="state"
+                           widget="statusbar"/>
+
+                </header>
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+
+                            <field name="name"/>
+
+                            <field name="employee_id"/>
+
+                        </group>
+
+                        <group>
+
+                            <field name="start_time"/>
+
+                            <field name="end_time"/>
+
+                            <field name="last_update"/>
+
+                            <field name="point_count"/>
+
+                        </group>
+
+                    </group>
+
+
+                    <field name="point_ids"
+                           readonly="1">
+
+                        <list>
+
+                            <field name="timestamp"/>
+
+                            <field name="latitude"/>
+
+                            <field name="longitude"/>
+
+                            <field name="accuracy"/>
+
+                            <field name="address"/>
+
+                            <field name="maps_url"
+                                   widget="url"
+                                   text="Open Map"/>
+
+                            <field name="visit_id"/>
+
+                        </list>
+
+                    </field>
+
+                </sheet>
+
+            </form>
+
+        </field>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- TRACKING SESSIONS ACTION                              -->
+    <!-- ===================================================== -->
+
+    <record id="action_nk_tracking_sessions"
+            model="ir.actions.act_window">
+
+        <field name="name">Tracking Sessions</field>
+
+        <field name="res_model">nk.tracking.session</field>
+
+        <field name="view_mode">list,form</field>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- LIVE MAP                                              -->
+    <!-- ===================================================== -->
+
+    <record id="action_nk_tracking_live_map"
+            model="ir.actions.act_url">
+
+        <field name="name">Live Map</field>
+
+        <field name="url">
+            /nk_salesperson/admin/tracking/map
+        </field>
+
+        <field name="target">new</field>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- LOCATION HISTORY                                      -->
+    <!-- ===================================================== -->
+
+    <record id="action_nk_tracking_history_page"
+            model="ir.actions.act_url">
+
+        <field name="name">Location History</field>
+
+        <field name="url">
+            /nk_salesperson/admin/tracking/history
+        </field>
+
+        <field name="target">new</field>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- TODAY TRACKING                                        -->
+    <!-- ===================================================== -->
+
+    <record id="action_nk_tracking_today_page"
+            model="ir.actions.act_url">
+
+        <field name="name">Today Tracking</field>
+
+        <field name="url">
+            /nk_salesperson/admin/tracking/today
+        </field>
+
+        <field name="target">new</field>
+
+    </record>
+
+
+    <!-- ===================================================== -->
+    <!-- MAIN MENU                                             -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_nk_tracking_root"
+              name="Location Tracking"
+              parent="menu_nk_salesperson_root"
+              sequence="30"
+              groups="nk_salesperson_sales_login.group_nk_salesperson_manager,base.group_system"/>
+
+
+    <!-- ===================================================== -->
+    <!-- SALESPERSON STATUS                                    -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_nk_tracking_employees"
+              name="Field Salesperson Status"
+              parent="menu_nk_tracking_root"
+              action="action_nk_tracking_employees"
+              sequence="10"/>
+
+
+    <!-- ===================================================== -->
+    <!-- TODAY TRACKING                                        -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_nk_tracking_today"
+              name="Today Tracking"
+              parent="menu_nk_tracking_root"
+              action="action_nk_tracking_today_page"
+              sequence="15"/>
+
+
+    <!-- ===================================================== -->
+    <!-- LIVE MAP                                              -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_nk_tracking_live_map"
+              name="Live Map"
+              parent="menu_nk_tracking_root"
+              action="action_nk_tracking_live_map"
+              sequence="20"/>
+
+
+    <!-- ===================================================== -->
+    <!-- LOCATION HISTORY                                      -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_nk_tracking_history"
+              name="Location History"
+              parent="menu_nk_tracking_root"
+              action="action_nk_tracking_history_page"
+              sequence="30"/>
+
+
+    <!-- ===================================================== -->
+    <!-- TRACKING SESSIONS                                     -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_nk_tracking_sessions"
+              name="Tracking Sessions"
+              parent="menu_nk_tracking_root"
+              action="action_nk_tracking_sessions"
+              sequence="40"/>
+
+</odoo>

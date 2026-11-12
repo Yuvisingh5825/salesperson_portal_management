@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Discuss -->
+    <record id="mail.menu_root_discuss" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Sales -->
+    <record id="sale.sale_menu_root" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Employees -->
+    <record id="hr.menu_hr_root" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Inventory -->
+    <record id="stock.menu_stock_root" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Purchase -->
+    <record id="purchase.menu_purchase_root" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+    <!-- Accounting -->
+    <record id="account.menu_finance" model="ir.ui.menu">
+        <field name="group_ids"
+               eval="[(6, 0, [ref('base.group_system')])]"/>
+    </record>
+
+
+</odoo>
